@@ -1,0 +1,21 @@
+{
+    'name': 'Advance Sale',
+    'version': '1.0.0',
+    'category': 'Sale',
+    'author': 'Odoo Mates',
+    'sequence':-101,
+    'summary': 'Hospital management system',
+    'description': """Hospital management system""",
+    'depends': ['sale'],
+    'data':[
+        'security/ir.model.access.csv',
+        'security/security.xml',
+        'wizard/update_discount_view.xml',
+        'views/advance_sale_view.xml',
+        'views/special_view.xml',
+    ],
+    'demo': [],
+    'application': True,
+    'auto_install': False,
+    'license': 'LGPL-3',
+}

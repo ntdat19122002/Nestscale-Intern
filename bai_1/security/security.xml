@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record model="ir.module.category" id="module_category_partner_vip">
+        <field name="name">Parner Vip</field>
+        <field name="description">Category For Parner</field>
+    </record>
+
+    <record id="group_partner_vip" model="res.groups">
+        <field name="name">Vip</field>
+        <field name="category_id" ref="module_category_partner_vip"/>
+    </record>
+</odoo>

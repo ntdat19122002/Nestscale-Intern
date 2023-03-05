@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+<!--        <record id="action_update_discount" model="ir.actions.server">-->
+<!--            <field name="name">Update Discount</field>-->
+<!--            <field name="model_id" ref="model_res_partner"/>-->
+<!--            <field name="binding_model_id" ref="model_res_partner"/>-->
+<!--            <field name="state">code</field>-->
+<!--            <field name="code">-->
+<!--                action = records.update_discount()-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <record id="view_update_discount_form" model="ir.ui.view">
+            <field name="name">update.discount.wizard.form</field>
+            <field name="model">update.discount.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="vip_code"/>
+                    </group>
+                    <footer>
+                        <button name="action_update_discount" string="Update Code Vip" type="object" class="btn-primary"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_special_customer_update" model="ir.actions.act_window">
+            <field name="name">Customer Vip Update</field>
+            <field name="res_model">update.discount.wizard</field>
+            <field name="binding_model_id" ref="model_res_partner"/>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="view_id" ref="view_update_discount_form"/>
+        </record>
+
+    </data>
+</odoo>

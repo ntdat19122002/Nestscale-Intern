@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://kit.fontawesome.com/3ec5aa8ff1.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="bundle/static/css/style.css">
+    <link rel="stylesheet" href="bundle/static/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+<!--        Header -->
+        <header>
+            <div class="menu">
+                <div class="logo">
+                    <img src="bundle/static/images/logo.png" alt="">
+                </div>
+                <div class="navbar">
+                    <ul>
+                        <li class="nav-item"><a href="">Home</a></li>
+                        <li class="nav-item"><a href="">Shop</a></li>
+                        <li class="nav-item"><a href="">Contact Us</a></li>
+                        <li class="nav-item"><a href="">Test menu</a></li>
+                        <li class="nav-item">
+                            <a href="">
+                                <i class="fa fa-shopping-cart"></i>
+                                <span class="count-item mini-button">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item"><a href="">Mitchel Admin</a></li>
+                    </ul>
+                </div>
+                <div class="contact">
+                    <a class="button mini-button" href="contact">Contact us</a>
+                </div>
+            </div>
+        </header>
+
+<!--       Main -->
+        <main>
+<!--            Navbar for search products-->
+            <div class="nav-search">
+                <div class="search mx-4">
+                    <input type="text" name="" id="" placeholder="Search...">
+                    <div class="mini-button search-button">
+                        <i class="fa fa-search"></i>
+                    </div>
+                </div>
+                <div class="currency price-list pp-button mx-4">Public Pricelist</div>
+                <div class="pagination mx-4 flex">
+                    <div class="pagination-button">Prev</div>
+                    <div class="pagination-button">1</div>
+                    <div class="pagination-button">2</div>
+                    <div class="pagination-button">Next</div>
+                </div>
+                <div class="type mx-4">
+                    <i class="fas fa-th-large pp-button"></i><i class="fa-sharp fa-solid fa-list-ul pp-button"></i>
+                </div>
+                <div class="sort pp-button mx-4">Sort by</div>
+            </div>
+<!--            Products list -->
+            <div class="products">
+                {% for product in products: %}
+                    <img src="data:image/png;base64,{{ product.image_1024.decode('UTF-8') }}" alt="ok">
+                    {{product.name}}
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
