@@ -16,9 +16,38 @@ class BundleAPI(odoo.http.Controller):
         res = template.render()
         return res
 
-    @odoo.http.route('/bundle/api', auth='public', type="http")
+    # Get all products
+    @odoo.http.route('/bundle/api', auth='public', type="http", cors="*")
     def shop_bundle_api(self):
         products = request.env['product.product'].search([])
+        data = {}
+        products_data = []
         for product in products:
-            print(product.name)
-        return json.dumps({'pruducts[0]':'asdf'})
+            image = ''
+            if isinstance(product.image_1024, bytes):
+                image = product.image_1024.decode('utf-8')
+            products_data.append(
+                {
+                    'id':product.id,
+                    'name':product.name,
+                    'price':product.lst_price,
+                    'image':image
+                }
+            )
+        data['products'] = products_data
+        return json.dumps(data)
+
+    # Get product with id
+    @odoo.http.route('/bundle/api/<int:id>', auth='public', type="http", cors="*")
+    def product_bundle_api(self,id):
+        product = request.env['product.product'].browse(id)
+        image = ''
+        if isinstance(product.image_1024, bytes):
+            image = product.image_1024.decode('utf-8')
+        products_data = {
+            'id': product.id,
+            'name': product.name,
+            'price': product.lst_price,
+            'image': image
+        }
+        return json.dumps(products_data)
