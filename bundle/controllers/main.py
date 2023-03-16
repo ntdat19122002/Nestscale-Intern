@@ -66,7 +66,7 @@ class BundleAPI(odoo.http.Controller):
     # Get product with id
     @odoo.http.route('/bundle/api/<int:id>', auth='public', type="http", cors="*")
     def product_bundle_api(self,id):
-        product = request.env['product.template'].browse(id)
+        product = request.env['product.template'].sudo().browse(id)
         image = ''
         if isinstance(product.image_1024, bytes):
             image = product.image_1024.decode('utf-8')

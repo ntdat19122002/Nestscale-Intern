@@ -15,7 +15,7 @@
                     <field name="start_time"/>
                     <field name="end_time"/>
                     <field name="enable" widget="boolean_toggle"/>
-                    <field name="indefinite_bundle"/>
+                    <field name="indefinite_bundle" widget="boolean_toggle" string="Alway Visible"/>
                 </tree>
             </field>
         </record>
@@ -35,31 +35,45 @@
                         <h1 class="mt-4 mb-2">
                             General Settings
                         </h1>
-                        <div class="d-flex">
-                            <div class="w-50 d-flex">
-                                <div class="w-25">
-                                    <div class="mb-3 font-weight-bold">Title</div>
-                                    <div class="mb-3 font-weight-bold">Description</div>
-                                    <div class="mb-3 font-weight-bold" attrs="{'invisible':[('indefinite_bundle','=',True)]}">Date Range</div>
-                                    <div class="mb-3 font-weight-bold">Timezone</div>
-                                    <div class="mb-3 font-weight-bold">Always Visible</div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="row mb-3 mr-5">
+                                    <div class="col-3 font-weight-bold">Title</div>
+                                    <div class="col-9"><field name="title"/></div>
                                 </div>
-                                <div class="w-75 mr-5">
-                                    <div><field name="title"/></div>
-                                    <div><field name="description"/></div>
-                                    <div attrs="{'invisible':[('indefinite_bundle','=',True)]}">
-                                        Form <span><field attrs="{'required':[('indefinite_bundle','=',False)]}" name="start_time" style="width:43%;"/>
-                                        </span> to <span> <field name="end_time" style="width:43%;" attrs="{'required':[('indefinite_bundle','=',False)]}"/></span>
+                                <div class="row mb-3 mr-5">
+                                    <div class="col-3 font-weight-bold">Description</div>
+                                    <div class="col-9"><field name="description"/></div>
+                                </div>
+                                <div class="row mb-3 mr-5" attrs="{'invisible':[('indefinite_bundle','=',True)]}">
+                                    <div class="col-3 font-weight-bold">Date Range</div>
+                                    <div class="col-9">
+                                        Form <span><field attrs="{'required':[('indefinite_bundle','=',False)]}"
+                                                          widget="daterange"
+                                                          options="{'related_end_date': 'end_time'}"
+                                                          name="start_time"
+                                                          style="width:42%;"/>
+                                        </span> to <span> <field name="end_time"
+                                                                 options="{'related_end_date': 'start_time'}"
+                                                                 widget="daterange"
+                                                                 style="width:42%;"
+                                                                 attrs="{'required':[('indefinite_bundle','=',False)]}"/></span>
                                     </div>
-                                    <div class="mt-2">UTC</div>
-                                    <field name="indefinite_bundle" widget="boolean_toggle" class="mt-3"/>
+                                </div>
+                                <div class="row mb-3 mr-5">
+                                    <div class="col-3 font-weight-bold">Timezone</div>
+                                    <div class="col-9">UTC</div>
+                                </div>
+                                <div class="row mb-3 mr-5">
+                                    <div class="col-3 font-weight-bold">Always Visible</div>
+                                    <div class="col-9"><field name="indefinite_bundle" widget="boolean_toggle"/></div>
                                 </div>
                             </div>
-                            <div class="w-50 d-flex">
-                                <div class="w-25">
+                            <div class="col-6 d-flex row">
+                                <div class="col-3">
                                     <div class="mb-3 font-weight-bold">Priority</div>
                                 </div>
-                                <div class="w-25 mr-5">
+                                <div class="col-3 mr-5">
                                     <field name="priority" options='{"type": "number", "step": 1}'/>
                                 </div>
                             </div>
@@ -70,22 +84,38 @@
                         <h1 class="mt-5 mb-3">
                             Discount Settings
                         </h1>
-                        <div class="d-flex" style="width:60%;margin-bottom:60px;">
-                            <div class="w-25">
-                                <div class="mb-3 font-weight-bold">Bundle Type</div>
-                                <div class="mb-3 font-weight-bold">Discount Rule</div>
-                                <div class="mb-3 font-weight-bold">Discount Type</div>
-                                <div class="mb-3 font-weight-bold">Discount Value</div>
+                        <div  style="width:60%;margin-bottom:60px;">
+                            <div class="row mb-3">
+                                <div class="col-3 font-weight-bold">Bundle Type</div>
+                                <div class="col-9"><field name="type"/></div>
                             </div>
-                            <div class="w-75 mr-5">
-                                <div><field class="mb-3" name="type"/></div>
-                                <div><field class="mb-3" name="discount_rule"/></div>
-                                <div><field class="mb-2" name="discount_type"/></div>
-                                <field name="discount_value" class="w-75"/> <span> % OFF</span>
+                            <div class="row mb-3" >
+                                <div class="col-3 font-weight-bold">Discount Rule</div>
+                                <div class="col-9"><field name="discount_rule"/></div>
+                            </div>
+                            <div class="row mb-3" attrs="{'invisible': [('type','=','tier')]}">
+                                <div class="col-3 font-weight-bold">Discount Type</div>
+                                <div class="col-9"><field name="discount_type"/></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-3 font-weight-bold">Discount Value</div>
+                                <div class="col-9"><field name="discount_value" class="w-75"/> <span> % OFF</span></div>
                             </div>
                         </div>
 
-                        <!--         TODO: Product Tree            -->
+                        <!--         Qty bundle            -->
+<!--                        <div attrs="{'invisible': [('type','!=','tier')]}">-->
+                            <strong>Config quantity and discount value</strong>
+                            <field name="bundle_qty" nolabel="1" import="0">
+                                <tree editable="bottom" edit="1">
+                                    <field name="is_add_range" widget="boolean_toggle"/>
+                                    <field name="qty_start"/>
+                                    <field name="qty_end" attrs="{'invisible': [('is_add_range', '=', False)]}"/>
+                                    <field name="discount_value"/>
+                                </tree>
+                            </field>
+
+                        <!--         Product list of bundle            -->
                         <hr class="mt-5"/>
                         <p>Choose products which are applied in this bundle</p>
                         <p><strong>Note:</strong> Choose the variant if you want to set your bundle at variant level. With product without variant, the product variant will be blank</p>
@@ -94,6 +124,7 @@
                             <button name="add_product" type="button" class="btn btn-primary float-right mb-3">Add Product</button>
                         </div>
 
+                        <!--          total        -->
                         <field name="total_products" nolabel="1"  attrs="{'invisible': ['|',('type', '!=', 'bundle'),
                                                                                       ('discount_rule', '!=', 'discount_total')]}">
                             <tree string="Bundle Products" editable="bottom" edit="1" import="0">
@@ -104,6 +135,7 @@
                             </tree>
                         </field>
 
+                        <!--          each        -->
                         <field name="each_products" nolabel="1"  attrs="{'invisible': ['|',('type', '!=', 'bundle'),
                                                                                       ('discount_rule', '!=', 'discount_products')]}">
                             <tree string="Bundle Products" editable="bottom" edit="1" import="0">
@@ -115,6 +147,7 @@
                             </tree>
                         </field>
 
+                        <!--          tier        -->
                         <field name="tier_products" nolabel="1" attrs="{'invisible': [('type', '!=', 'tier')]}">
                             <tree string="Bundle Products" editable="bottom">
                                 <field name="image_128" string=" " widget="image" readonly="1"/>
@@ -141,6 +174,7 @@
         <menuitem id="bundle_menu"
             name="Bundle"
             parent="bundle_root"
+            sequence="0"
             action="product_bundle_action"/>
 
         <menuitem id="menu_bundle_dashboard"

@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access.bundle,access_bundle,bundle.model_product_bundle,,1,1,1,1
+access.bundle.qty,access_bundle_qty,bundle.model_product_bundle_qty,,1,1,1,1
