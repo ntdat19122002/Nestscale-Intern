@@ -8,10 +8,13 @@ class ProductBundleQuantity(models.Model):
     qty_end = fields.Integer()
     discount_value = fields.Integer()
     bundle_id = fields.Many2one('product.bundle')
+    highlight_enable = fields.Boolean()
 
     @api.constrains('qty_start','qty_end')
     def check_qty_range(self):
         for rec in self:
-            if rec.qty_end - rec.qty_start <=0 :
+            if rec.qty_start<=0:
+                raise ValidationError('Qty start must be larger than 0')
+            if rec.is_add_range == True and rec.qty_end - rec.qty_start <=0 :
                 raise ValidationError('Qty end must be larger than qty start')
 

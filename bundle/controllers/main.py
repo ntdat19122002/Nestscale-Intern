@@ -63,9 +63,33 @@ class BundleAPI(odoo.http.Controller):
             'max_page': math.ceil(request.env['product.template'].sudo().search_count([])/per_page)
         }
         return Response(json.dumps(result), mimetype='application/json')
+
     # Get product with id
-    @odoo.http.route('/bundle/api/<int:id>', auth='public', type="http", cors="*")
+    @odoo.http.route('/bundle/api/product/<int:id>', auth='public', type="http", cors="*")
     def product_bundle_api(self,id):
+        templates = request.env['product.template'].sudo().browse(id)
+        products = templates.product_variant_ids
+        data = {}
+        products_data = []
+        for product in products:
+            bundle_total = request.env.cr.execute("SELECT product_bundle_id FROM total_products WHERE product_product_id = %s" % product.id)
+            bundle_each = request.env.cr.execute("SELECT product_bundle_id FROM each_products WHERE product_product_id = %s" % product.id)
+            bundle_tier = request.env.cr.execute("SELECT product_bundle_id FROM tier_products WHERE product_product_id = %s" % product.id)
+            print(bundle_tier)
+            if isinstance(product.image_1024, bytes):
+                image = product.image_1024.decode('utf-8')
+            products_data.append({
+                'id': product.id,
+                'name':product.name,
+                'price':product.lst_price,
+                'image': image
+            })
+        data['products'] = products_data
+        return json.dumps(data)
+
+    # Get template with id
+    @odoo.http.route('/bundle/api/template/<int:id>', auth='public', type="http", cors="*")
+    def template_bundle_api(self,id):
         product = request.env['product.template'].sudo().browse(id)
         image = ''
         if isinstance(product.image_1024, bytes):

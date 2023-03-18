@@ -104,16 +104,20 @@
                         </div>
 
                         <!--         Qty bundle            -->
-<!--                        <div attrs="{'invisible': [('type','!=','tier')]}">-->
-                            <strong>Config quantity and discount value</strong>
-                            <field name="bundle_qty" nolabel="1" import="0">
-                                <tree editable="bottom" edit="1">
+                        <div attrs="{'invisible': [('type','!=','tier')]}">
+                            <div>
+                                <strong>Config quantity and discount value</strong>
+                            </div>
+                            <field name="bundle_qty" nolabel="1" import="0" style="width:60%;">
+                                <tree editable="bottom" edit="1" create="1">
                                     <field name="is_add_range" widget="boolean_toggle"/>
                                     <field name="qty_start"/>
                                     <field name="qty_end" attrs="{'invisible': [('is_add_range', '=', False)]}"/>
                                     <field name="discount_value"/>
+                                    <field name="highlight_enable" widget="boolean_toggle"/>
                                 </tree>
                             </field>
+                        </div>
 
                         <!--         Product list of bundle            -->
                         <hr class="mt-5"/>

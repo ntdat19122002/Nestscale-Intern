@@ -21,7 +21,7 @@ class Bundle(models.Model):
     total_products = fields.Many2many('product.product','total_products')
     each_products = fields.Many2many('product.product','each_products')
     tier_products = fields.Many2many('product.product','tier_products')
-    bundle_qty = fields.Many2one('product.bundle.qty')
+    bundle_qty = fields.One2many('product.bundle.qty','bundle_id')
     @api.onchange('indefinite_bundle')
     def change_indefinite_bundle(self):
         for rec in self:
