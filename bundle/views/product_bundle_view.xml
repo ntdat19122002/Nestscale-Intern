@@ -89,11 +89,11 @@
                                 <div class="col-3 font-weight-bold">Bundle Type</div>
                                 <div class="col-9"><field name="type"/></div>
                             </div>
-                            <div class="row mb-3" >
+                            <div class="row mb-3" attrs="{'invisible': [('type','=','tier')]}">
                                 <div class="col-3 font-weight-bold">Discount Rule</div>
                                 <div class="col-9"><field name="discount_rule"/></div>
                             </div>
-                            <div class="row mb-3" attrs="{'invisible': [('type','=','tier')]}">
+                            <div class="row mb-3">
                                 <div class="col-3 font-weight-bold">Discount Type</div>
                                 <div class="col-9"><field name="discount_type"/></div>
                             </div>
@@ -104,16 +104,20 @@
                         </div>
 
                         <!--         Qty bundle            -->
-<!--                        <div attrs="{'invisible': [('type','!=','tier')]}">-->
-                            <strong>Config quantity and discount value</strong>
-                            <field name="bundle_qty" nolabel="1" import="0">
-                                <tree editable="bottom" edit="1">
+                        <div attrs="{'invisible': [('type','!=','tier')]}">
+                            <div>
+                                <strong>Config quantity and discount value</strong>
+                            </div>
+                            <field name="bundle_qty" nolabel="1" import="0" style="width:60%;">
+                                <tree editable="bottom" edit="1" create="1">
                                     <field name="is_add_range" widget="boolean_toggle"/>
                                     <field name="qty_start"/>
                                     <field name="qty_end" attrs="{'invisible': [('is_add_range', '=', False)]}"/>
                                     <field name="discount_value"/>
+                                    <field name="highlight_enable" widget="boolean_toggle"/>
                                 </tree>
                             </field>
+                        </div>
 
                         <!--         Product list of bundle            -->
                         <hr class="mt-5"/>

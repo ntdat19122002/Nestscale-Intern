@@ -63,9 +63,96 @@ class BundleAPI(odoo.http.Controller):
             'max_page': math.ceil(request.env['product.template'].sudo().search_count([])/per_page)
         }
         return Response(json.dumps(result), mimetype='application/json')
+
     # Get product with id
-    @odoo.http.route('/bundle/api/<int:id>', auth='public', type="http", cors="*")
+    @odoo.http.route('/bundle/api/product/<int:id>', auth='public', type="http", cors="*")
     def product_bundle_api(self,id):
+        templates = request.env['product.template'].sudo().browse(id)
+        products = templates.product_variant_ids
+        data = {}
+        products_data = []
+        for product in products:
+            request.env.cr.execute("SELECT product_bundle_id "
+                                   "FROM tier_products "
+                                   "WHERE product_product_id = %s" % product.id)
+            bundle_tier_ids = (x[0] for x in request.env.cr.fetchall())
+            bundle_tiers = request.env['product.bundle'].sudo().browse(bundle_tier_ids)
+            bundle_tier_data = []
+            for bundle_tier in bundle_tiers:
+                bundle_qty_data = []
+                for bundle_qty in bundle_tier.bundle_qty:
+                    bundle_qty_data.append({
+                        'start':bundle_qty.qty_start,
+                        'end':bundle_qty.qty_end,
+                        'discount_value':bundle_qty.discount_value,
+                        'highlight_enable':bundle_qty.highlight_enable
+                    })
+                bundle_tier_data.append({
+                    'title': bundle_tier.title,
+                    'discount_type': bundle_tier.discount_type,
+                    'qty' : bundle_qty_data
+                })
+
+
+            request.env.cr.execute("SELECT product_bundle_id "
+                                   "FROM total_products "
+                                   "WHERE product_product_id = %s" % product.id)
+            bundle_total_ids = (x[0] for x in request.env.cr.fetchall())
+            bundle_totals = request.env['product.bundle'].sudo().browse(bundle_total_ids)
+            bundle_total_data = []
+            for bundle_total in bundle_totals:
+                products_bundle = []
+                for product_bundle in bundle_total.total_products:
+                    if isinstance(product_bundle.image_1024, bytes):
+                        image = product_bundle.image_1024.decode('utf-8')
+                    products_bundle.append({
+                        'name' : product_bundle.name,
+                        'price': product_bundle.lst_price,
+                        'image': image,
+                    })
+                bundle_total_data.append({
+                    'title': bundle_total.title,
+                    'products': products_bundle
+                })
+
+            request.env.cr.execute("SELECT product_bundle_id "
+                                   "FROM each_products "
+                                   "WHERE product_product_id = %s" % product.id)
+            bundle_each_ids = (x[0] for x in request.env.cr.fetchall())
+            bundle_eachs = request.env['product.bundle'].sudo().browse(bundle_each_ids)
+            bundle_each_data = []
+            for bundle_each in bundle_eachs:
+                products_bundle = []
+                for product_bundle in bundle_each.each_products:
+                    if isinstance(product_bundle.image_1024, bytes):
+                        image = product_bundle.image_1024.decode('utf-8')
+                    products_bundle.append({
+                        'name': product_bundle.name,
+                        'price': product_bundle.lst_price,
+                        'image': image,
+                    })
+                bundle_each_data.append({
+                    'title': bundle_each.title,
+                    'products': products_bundle
+                })
+
+            if isinstance(product.image_1024, bytes):
+                image = product.image_1024.decode('utf-8')
+            products_data.append({
+                'id'   : product.id,
+                'name' : product.name,
+                'price': product.lst_price,
+                'image': image,
+                'bundle_tier' : bundle_tier_data,
+                'bundle_total': bundle_total_data,
+                'bundle_each' : bundle_each_data
+            })
+        data['products'] = products_data
+        return json.dumps(data)
+
+    # Get template with id
+    @odoo.http.route('/bundle/api/template/<int:id>', auth='public', type="http", cors="*")
+    def template_bundle_api(self,id):
         product = request.env['product.template'].sudo().browse(id)
         image = ''
         if isinstance(product.image_1024, bytes):
