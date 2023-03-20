@@ -97,7 +97,7 @@
                                 <div class="col-3 font-weight-bold">Discount Type</div>
                                 <div class="col-9"><field name="discount_type"/></div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3" attrs="{'invisible': ['|',('type','=','tier'),('discount_rule','=','discount_products')]}">
                                 <div class="col-3 font-weight-bold">Discount Value</div>
                                 <div class="col-9"><field name="discount_value" class="w-75"/> <span> % OFF</span></div>
                             </div>

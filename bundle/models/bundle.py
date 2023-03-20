@@ -22,6 +22,39 @@ class Bundle(models.Model):
     each_products = fields.Many2many('product.product','each_products')
     tier_products = fields.Many2many('product.product','tier_products')
     bundle_qty = fields.One2many('product.bundle.qty','bundle_id')
+
+    def total_origin_price(self):
+        total_price = 0
+        if self.type == 'bundle' and self.discount_rule == 'discount_total':
+            for product in self.total_products:
+                total_price += product.lst_price
+        elif self.type == 'bundle' and self.discount_rule == 'discount_products':
+            for product in self.each_products:
+                total_price += product.lst_price
+        return total_price
+
+    def price_total_bundle(self):
+        if self.discount_type == 'percentage':
+            price_bundle = self.total_origin_price()*(1-self.discount_value/100)
+        elif self.discount_type == 'hard_fix':
+            price_bundle = self.total_origin_price() - self.discount_value
+        elif self.discount_type == 'total_fix':
+            price_bundle = self.discount_value
+        return round(price_bundle,2)
+
+    def price_each_bundle(self):
+        price_bundle = 0
+        if self.discount_type == 'percentage':
+            for product in self.each_products:
+                price_bundle += product.lst_price*(1-product.discount_value/100)
+        elif self.discount_type == 'hard_fix':
+            for product in self.each_products:
+                price_bundle += product.lst_price - product.discount_value
+        elif self.discount_type == 'total_fix':
+            for product in self.each_products:
+                price_bundle += product.discount_value
+        return round(price_bundle, 2)
+
     @api.onchange('indefinite_bundle')
     def change_indefinite_bundle(self):
         for rec in self:
@@ -32,8 +65,9 @@ class Bundle(models.Model):
     @api.constrains('discount_value')
     def check_discount_value(self):
         for rec in self:
-            if rec.discount_value <= 0:
-                raise ValidationError('Discount value must be positive')
+            if rec.type == 'bundle' and rec.discount_rule == 'discount_total':
+                if rec.discount_value <= 0:
+                    raise ValidationError('Discount value must be positive')
 
     @api.constrains('title')
     def check_title(self):
