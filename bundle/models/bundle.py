@@ -55,6 +55,16 @@ class Bundle(models.Model):
                 price_bundle += product.discount_value
         return round(price_bundle, 2)
 
+    def price_tier_bundle(self,product,num,discount_value):
+        price_bundle = 0
+        if self.discount_type == 'percentage':
+            price_bundle = product.lst_price * (1 - discount_value / 100) * num
+        elif self.discount_type == 'hard_fix':
+            price_bundle = (product.lst_price - discount_value) * num
+        elif self.discount_type == 'total_fix':
+            price_bundle = discount_value
+        return round(price_bundle, 2)
+
     @api.onchange('indefinite_bundle')
     def change_indefinite_bundle(self):
         for rec in self:
