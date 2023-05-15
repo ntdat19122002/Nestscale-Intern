@@ -11,8 +11,10 @@ loader = jinja2.FileSystemLoader(path)
 jinja_env = jinja2.Environment(loader=loader, autoescape=True)
 jinja_env.filters["json"] = json.dumps
 class BundleAPI(odoo.http.Controller):
+    # FE interface
     @odoo.http.route("/bundle", auth="public", type="http", cors="*")
     def shop_bundle(self):
+        print(os.path.join(os.path.dirname(__file__), "../static/html"))
         template = jinja_env.get_template("index.html")
         res = template.render()
         return res
@@ -30,7 +32,7 @@ class BundleAPI(odoo.http.Controller):
         response = []
         for record in records:
             image = ""
-            if isinstance(record["image_1024"], bytes):
+            if record["image_1024"]:
                 image = record["image_1024"].decode("utf-8")
             response.append({"id": record["id"], "name": record["name"], "image":image, "price": record["lst_price"]})
 
@@ -43,7 +45,7 @@ class BundleAPI(odoo.http.Controller):
         }
         return Response(json.dumps(result), mimetype="application/json")
 
-    # Get product with id
+    # Get varient of product with id
     @odoo.http.route("/bundle/api/product/<int:id>", auth="public", type="http", cors="*")
     def product_bundle_api(self,id):
         templates = request.env["product.template"].sudo().browse(id)
@@ -55,7 +57,7 @@ class BundleAPI(odoo.http.Controller):
             bundle_tiers = request.env["product.bundle"].sudo().browse(product.get_bundle_tier_ids())
             bundle_tier_data = []
             for bundle_tier in bundle_tiers:
-                if self.checkBundle(bundle_tier):
+                if self.check_bundle(bundle_tier):
                     bundle_qty_data = []
                     for bundle_qty in bundle_tier.bundle_qty:
                         bundle_qty_data.append({
@@ -72,12 +74,11 @@ class BundleAPI(odoo.http.Controller):
                     })
 
             # total
-
             bundle_totals = request.env["product.bundle"].sudo().browse(product.get_bundle_total_ids())
             bundle_total_data = []
             for bundle_total in bundle_totals:
-                if self.checkBundle(bundle_total):
-                    products_bundle = self.get_product_by_bundle_total(bundle_total)
+                if self.check_bundle(bundle_total):
+                    products_bundle = self.get_product_by_bundle(bundle_total)
                     bundle_total_data.append({
                         "id": bundle_total.id,
                         "title": bundle_total.title,
@@ -88,12 +89,11 @@ class BundleAPI(odoo.http.Controller):
                     })
 
             # each
-
             bundle_eachs = request.env["product.bundle"].sudo().browse(product.get_bundle_each_ids())
             bundle_each_data = []
             for bundle_each in bundle_eachs:
-                if self.checkBundle(bundle_each):
-                    products_bundle = self.get_product_by_bundle_each(bundle_each)
+                if self.check_bundle(bundle_each):
+                    products_bundle = self.get_product_by_bundle(bundle_each)
                     bundle_each_data.append({
                         "id":bundle_each.id,
                         "title": bundle_each.title,
@@ -102,7 +102,7 @@ class BundleAPI(odoo.http.Controller):
                         "sale_total":bundle_each.price_each_bundle()
                     })
 
-            if isinstance(product.image_1024, bytes):
+            if product.image_1024:
                 image = product.image_1024.decode("utf-8")
             products_data.append({
                 "id"   : product.id,
@@ -116,12 +116,16 @@ class BundleAPI(odoo.http.Controller):
         data["products"] = products_data
         return json.dumps(data)
 
-    def get_product_by_bundle_total(self,bundle):
+    def get_product_by_bundle(self,bundle):
         products_bundle = []
-        for product in bundle.total_products:
-            price_after = self.priceAfter(product.lst_price, bundle.discount_type,
-                                          bundle.discount_value)
-            if isinstance(product.image_1024, bytes):
+        bundle_type = ''
+        if bundle.discount_rule == 'discount_total':
+            bundle_type = 'total_products'
+        elif bundle.discount_rule == 'discount_products':
+            bundle_type = 'each_products'
+        for product in bundle[bundle_type]:
+            price_after = self.price_after(product.lst_price, bundle.discount_type, bundle.discount_value)
+            if product.image_1024:
                 image = product.image_1024.decode("utf-8")
             products_bundle.append({
                 "name": product.name,
@@ -131,28 +135,14 @@ class BundleAPI(odoo.http.Controller):
             })
         return products_bundle
 
-    def get_product_by_bundle_each(self,bundle):
-        products_bundle = []
-        for product in bundle.each_products:
-            price_after = self.priceAfter(product.lst_price, bundle.discount_type,
-                                          bundle.discount_value)
-            if isinstance(product.image_1024, bytes):
-                image = product.image_1024.decode("utf-8")
-            products_bundle.append({
-                "name": product.name,
-                "price": product.lst_price,
-                "price_after": price_after,
-                "image": image,
-            })
-        return products_bundle
     # check bundle validation
-    def checkBundle(self,bundle):
+    def check_bundle(self,bundle):
         if bundle.enable == False:
             return False
         return True
 
     # caculate price after sale
-    def priceAfter(self,price,type,value):
+    def price_after(self,price,type,value):
         if type == "percentage":
             price_after = price*(1-value/100)
         if type == "hard_fix":
@@ -162,7 +152,7 @@ class BundleAPI(odoo.http.Controller):
         return round(price_after,2)
 
     @odoo.http.route("/cart", auth="public", type="http", cors="*")
-    def Cart(self):
+    def cart(self):
         cart_lines = request.env["cart.line"].sudo().search([])
         bundles = request.env["product.bundle"].sudo().search([],order="priority ,type")
         data={}
@@ -170,7 +160,7 @@ class BundleAPI(odoo.http.Controller):
         product_lst = {}
         total = 0
         for cart_line in cart_lines:
-            if isinstance(cart_line.product.image_1024, bytes):
+            if cart_line.product.image_1024:
                 image = cart_line.product.image_1024.decode("utf-8")
             total += cart_line.product.lst_price*cart_line.quantity
             cart_line_data.append({
@@ -211,13 +201,14 @@ class BundleAPI(odoo.http.Controller):
                         'highlight_enable':detail['highlight_enable'],
                         'num':detail['num']
                     })
+                    discount_total+=detail['discount_value_total']*detail['num']
                 product_lst.append({
                     'id':product_detail['id'],
                     'name':product_detail['name'],
                     'image': product_detail['image'],
                     'qty':qty_lst
                 })
-                discount_total+=detail['discount_value_total']
+
 
             bundles_data['bundle_tier'].append({
                 'id':bundle_detail['id'],
@@ -233,7 +224,7 @@ class BundleAPI(odoo.http.Controller):
             bundles_data["bundle_total"].append({
                 "id": bundle_discount.id,
                 "title":bundle_discount.title,
-                "products":self.get_product_by_bundle_total(bundle_discount),
+                "products":self.get_product_by_bundle(bundle_discount),
                 "discount_type": bundle_discount.discount_type,
                 "total": bundle_discount.total_origin_price(),
                 "sale_total": bundle_discount.price_total_bundle(),
@@ -249,7 +240,7 @@ class BundleAPI(odoo.http.Controller):
                 "id": bundle_discount.id,
                 "title":bundle_discount.title,
                 "discount_type": bundle_discount.discount_type,
-                "products":self.get_product_by_bundle_each(bundle_discount),
+                "products":self.get_product_by_bundle(bundle_discount),
                 "total": bundle_discount.total_origin_price(),
                 "sale_total": bundle_discount.price_each_bundle(),
                 "discount": discount,
@@ -314,7 +305,7 @@ class BundleAPI(odoo.http.Controller):
                             if bundle.id not in lst["bundle_tier"]:
                                 lst["bundle_tier"][bundle.id] = {}
                                 if product.id not in lst["bundle_tier"][bundle.id]:
-                                    if isinstance(product.image_1024, bytes):
+                                    if product.image_1024:
                                         image = product.image_1024.decode("utf-8")
                                     lst["bundle_tier"][bundle.id][product.id] = {
                                         'id':product.id,
@@ -346,7 +337,7 @@ class BundleAPI(odoo.http.Controller):
             return self.get_bundle_data_ids(lst, product_lst, bundles)
 
     @odoo.http.route("/add-to-cart", auth="public", type="json", cors="*", methods=["POST"])
-    def addToCart(self,**kwargs):
+    def add_to_cart(self,**kwargs):
         id = kwargs.get("id")
         quantity = kwargs.get("quantity")
 
@@ -361,7 +352,7 @@ class BundleAPI(odoo.http.Controller):
             cart_line.write({"quantity": (cart_line.quantity + quantity)})
 
     @odoo.http.route("/add-bundle-to-cart/<int:id>", auth="public", type="http", cors="*")
-    def addBundleToCart(self, id):
+    def add_bundle_to_cart(self, id):
         bundle = request.env["product.bundle"].sudo().browse(id)
         if bundle.discount_rule == "discount_total":
             for product in bundle.total_products:
@@ -384,15 +375,15 @@ class BundleAPI(odoo.http.Controller):
                 else:
                     cart_line.write({"quantity": (cart_line.quantity + 1)})
     @odoo.http.route("/update-cart-line/<int:id>/quantity/<int:quantity>", auth="public", type="http", cors="*")
-    def updateCartLine(self,id,quantity):
+    def update_cart_line(self,id,quantity):
         request.env["cart.line"].sudo().browse(id).write({"quantity": quantity})
 
     @odoo.http.route("/delete-cart-line/<int:id>", auth="public", type="http", cors="*")
-    def deleteCartLine(self,id):
+    def delete_cart_line(self,id):
         request.env["cart.line"].sudo().browse(id).unlink()
 
     @odoo.http.route("/length-cart", auth="public", type="http", cors="*")
-    def lenCart(self):
+    def length_cart(self):
         length = 0
         for cart_line in request.env["cart.line"].sudo().search([]):
             length += cart_line.quantity
