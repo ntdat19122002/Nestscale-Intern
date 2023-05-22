@@ -10,7 +10,7 @@
     'data':[
         'security/ir.model.access.csv',
         'views/product_bundle_view.xml',
-
+        'views/app.xml'
     ],
     'demo': [],
     'application': True,

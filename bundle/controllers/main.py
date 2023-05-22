@@ -12,12 +12,19 @@ jinja_env = jinja2.Environment(loader=loader, autoescape=True)
 jinja_env.filters["json"] = json.dumps
 class BundleAPI(odoo.http.Controller):
     # FE interface
-    @odoo.http.route("/bundle", auth="public", type="http", cors="*")
-    def shop_bundle(self):
-        print(os.path.join(os.path.dirname(__file__), "../static/html"))
-        template = jinja_env.get_template("index.html")
-        res = template.render()
-        return res
+    @odoo.http.route('/bundle', auth="user", type="http", cors="*")
+    def app_shopify_xero(self, **kw):
+        value = {
+            'key': 'value'
+        }
+        return request.render('bundle.bundle_app', {'app_setting': json.dumps(value)})
+
+    @odoo.http.route('/bundle/<string:components>', auth="user", type="http", cors="*")
+    def app_shopify_xero_branch(self):
+        value = {
+            'key': 'value'
+        }
+        return request.render('bundle.bundle_app', {'app_setting': json.dumps(value)})
 
     @odoo.http.route("/bundle/api/page/<int:page>", auth="public", type="http", cors="*")
     def shop_page_bundle_api(self, page):
