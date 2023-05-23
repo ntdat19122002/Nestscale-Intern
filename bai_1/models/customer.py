@@ -10,8 +10,9 @@ class Customer(models.Model):
     @api.depends('customer_discount_code')
     def _compute_check_code(self):
         for rec in self:
-            if re.search("VIP_[0-9]+",rec.customer_discount_code):
-                rec.check_code = True
-            else:
-                rec.check_code = False
+            # if re.search("VIP_[0-9]+",rec.customer_discount_code):
+            #     rec.check_code = True
+            # else:
+            #     rec.check_code = False
 
+            rec.check_code = True
